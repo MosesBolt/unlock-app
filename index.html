@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>For the Right Moment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:#000;
+  color:#fff;
+  font-family:Arial, sans-serif;
+  text-align:center;
+}
+.screen{padding:20px}
+.hidden{display:none}
+input,button{
+  width:90%;
+  max-width:360px;
+  padding:12px;
+  margin:10px 0;
+  border-radius:10px;
+  border:none;
+  font-size:1rem;
+}
+button{background:#fff;color:#000;cursor:pointer}
+h1{font-size:2.3rem}
+
+#countdown{
+  font-size:2.8rem;
+  color:#00f7ff;
+  text-shadow:0 0 10px #00f7ff;
+  cursor:pointer;
+}
+#countdown.big{font-size:4.6rem}
+
+.messageBox{
+  margin-top:25px;
+  padding:18px;
+  border-radius:14px;
+}
+#gfBox{background:rgba(255,0,100,.15)}
+#mentorBox{background:rgba(0,180,255,.15)}
+#hadaBox{background:rgba(255,200,0,.15)}
+#toluBox{background:rgba(150,255,150,.15)}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="login" class="screen hidden">
+  <h1>👋 Welcome</h1>
+  <input id="nameInput" placeholder="Your full name">
+  <input id="ageInput" type="number" placeholder="Your age">
+  <input id="dobInput" type="date">
+  <button id="saveBtn">Continue</button>
+</div>
+
+<!-- COUNTDOWN -->
+<div id="countScreen" class="screen hidden">
+  <h1>⏳ Waiting…</h1>
+  <div id="countdown">Loading…</div>
+  <p>(Tap to enlarge · long-press or triple double-click)</p>
+
+  <div id="secretBox" class="hidden">
+    <input id="secretInput" placeholder="Enter secret code">
+    <button id="secretBtn">Unlock</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainScreen" class="screen hidden">
+  <h1>A Private Message</h1>
+
+  <div id="gfBox" class="messageBox hidden">
+    <h2>💖 For You</h2>
+    <p id="gfMsg"></p>
+    <button onclick="downloadCard('gf')">Download Card</button>
+    <button onclick="shareWhatsApp('gf')">Share on WhatsApp</button>
+  </div>
+
+  <div id="mentorBox" class="messageBox hidden">
+    <h2>🧠 For Mr. David</h2>
+    <p id="mentorMsg"></p>
+    <button onclick="downloadCard('mentor')">Download Card</button>
+    <button onclick="shareWhatsApp('mentor')">Share on WhatsApp</button>
+  </div>
+
+  <div id="hadaBox" class="messageBox hidden">
+    <h2>🌸 For Hadassah</h2>
+    <p id="hadaMsg"></p>
+    <button onclick="downloadCard('hadassah')">Download Card</button>
+    <button onclick="shareWhatsApp('hadassah')">Share on WhatsApp</button>
+  </div>
+
+  <div id="toluBox" class="messageBox hidden">
+    <h2>🌱 For Tolu</h2>
+    <p id="toluMsg"></p>
+    <button onclick="downloadCard('tolu')">Download Card</button>
+    <button onclick="shareWhatsApp('tolu')">Share on WhatsApp</button>
+  </div>
+
+  <button onclick="resetApp()">Reset App</button>
+</div>
+
+<canvas id="cardCanvas" width="1080" height="1350" class="hidden"></canvas>
+
+<script>
+window.onload=()=>{
+  const CODES={
+    gf:"feb15",
+    mentor:"david01",
+    hadassah:"hada01",
+    tolu:"tolu01"
+  };
+
+  const messages={
+    gf:"You matter to me more than words usually allow me to say. Your presence makes life warmer and more meaningful.",
+    mentor:"Mr. David, thank you for believing in me — financially, mentally, and technically. I carry your impact into everything I build.",
+    hadassah:"Hadassah, you’ve been guidance, strength, and reassurance. I appreciate you deeply.",
+    tolu:"Tolu, you’re growing into something beautiful. Never doubt yourself — I’m always rooting for you."
+  };
+
+  const name=localStorage.getItem("name");
+  const age=localStorage.getItem("age");
+  const dob=localStorage.getItem("dob");
+
+  if(!name||!age||!dob) login.classList.remove("hidden");
+  else countScreen.classList.remove("hidden");
+
+  saveBtn.onclick=()=>{
+    if(!nameInput.value||!ageInput.value||!dobInput.value) return;
+    localStorage.setItem("name",nameInput.value);
+    localStorage.setItem("age",ageInput.value);
+    localStorage.setItem("dob",dobInput.value);
+    location.reload();
+  };
+
+  const nextNewYear=new Date(new Date().getFullYear()+1,0,1);
+  setInterval(()=>{
+    const d=Math.floor((nextNewYear-new Date())/1000);
+    countdown.textContent=`${Math.floor(d/86400)}d ${Math.floor(d/3600)%24}h ${Math.floor(d/60)%60}m ${d%60}s`;
+  },1000);
+
+  countdown.onclick=()=>countdown.classList.toggle("big");
+
+  let pressTimer,dbl=0;
+  countdown.onmousedown=()=>pressTimer=setTimeout(()=>secretBox.classList.remove("hidden"),3000);
+  countdown.onmouseup=()=>clearTimeout(pressTimer);
+  countdown.ondblclick=()=>{dbl++;if(dbl>=3){secretBox.classList.remove("hidden");dbl=0;}};
+
+  secretBtn.onclick=()=>{
+    const c=secretInput.value;
+    countScreen.classList.add("hidden");
+    mainScreen.classList.remove("hidden");
+
+    if(c===CODES.gf){gfBox.classList.remove("hidden");gfMsg.textContent=messages.gf;}
+    else if(c===CODES.mentor){mentorBox.classList.remove("hidden");mentorMsg.textContent=messages.mentor;}
+    else if(c===CODES.hadassah){hadaBox.classList.remove("hidden");hadaMsg.textContent=messages.hadassah;}
+    else if(c===CODES.tolu){toluBox.classList.remove("hidden");toluMsg.textContent=messages.tolu;}
+    else{alert("Wrong code");location.reload();}
+  };
+};
+
+function shareWhatsApp(type){
+  const texts={
+    gf:gfMsg.textContent,
+    mentor:mentorMsg.textContent,
+    hadassah:hadaMsg.textContent,
+    tolu:toluMsg.textContent
+  };
+  const msg="I made something for you 💙\n\n"+texts[type]+"\n\n— "+localStorage.getItem("name");
+  window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+}
+
+function downloadCard(type){
+  const canvas=cardCanvas,ctx=canvas.getContext("2d");
+  const colors={gf:"#ff4d8d",mentor:"#00b4ff",hadassah:"#ffd166",tolu:"#4dff88"};
+  const titles={gf:"For You",mentor:"Thank You, Mr. David",hadassah:"For Hadassah",tolu:"For Tolu"};
+  const texts={
+    gf:gfMsg.textContent,
+    mentor:mentorMsg.textContent,
+    hadassah:hadaMsg.textContent,
+    tolu:toluMsg.textContent
+  };
+
+  ctx.fillStyle="#000";ctx.fillRect(0,0,1080,1350);
+  ctx.fillStyle=colors[type];ctx.fillRect(0,0,1080,18);
+  ctx.fillStyle="#fff";ctx.font="bold 48px Arial";
+  ctx.fillText(titles[type],80,140);
+
+  ctx.font="32px Arial";
+  wrapText(ctx,texts[type],80,240,920,44);
+
+  ctx.font="28px Arial";
+  ctx.fillText("With love & respect,",80,1050);
+  ctx.font="italic 42px Comic Sans MS,cursive";
+  ctx.fillText(localStorage.getItem("name"),80,1110);
+  ctx.font="22px Arial";
+  ctx.fillText(new Date().toDateString(),80,1160);
+
+  const a=document.createElement("a");
+  a.download=`${type}_message.png`;
+  a.href=canvas.toDataURL();
+  a.click();
+}
+
+function wrapText(ctx,text,x,y,maxWidth,lineHeight){
+  const words=text.split(" ");let line="";
+  for(let w of words){
+    const test=line+w+" ";
+    if(ctx.measureText(test).width>maxWidth){
+      ctx.fillText(line,x,y);line=w+" ";y+=lineHeight;
+    }else line=test;
+  }
+  ctx.fillText(line,x,y);
+}
+
+function resetApp(){
+  localStorage.clear();
+  location.reload();
+}
+</script>
+
+</body>
+</html>
